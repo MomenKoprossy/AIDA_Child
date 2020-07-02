@@ -4,12 +4,12 @@ import {
   Dimensions,
   KeyboardAvoidingView,
   Image,
-  AsyncStorage
+  AsyncStorage,
 } from "react-native";
 import { Block, Button, Input, Text } from "galio-framework";
 import { LinearGradient } from "expo-linear-gradient";
 import Constants from "expo-constants";
-import { HeaderHeight, serverURL } from "./utils";
+import { HeaderHeight, serverURL, Theme_color } from "./utils";
 import axios from "react-native-axios";
 
 const { width } = Dimensions.get("window");
@@ -19,11 +19,11 @@ export class LoginView extends React.Component {
   state = {
     cCode: "",
     active: {
-      cCode: false
-    }
+      cCode: false,
+    },
   };
 
-  toggleActive = name => {
+  toggleActive = (name) => {
     const { active } = this.state;
     active[name] = !active[name];
 
@@ -33,11 +33,11 @@ export class LoginView extends React.Component {
     return (
       <LinearGradient
         locations={[0.1, 1]}
-        colors={["#ffffff", "#e85fc8"]}
+        colors={["#ffffff", "#371796"]}
         style={{
           marginTop: Platform.OS === "android" ? -HeaderHeight : 0,
           flex: 1,
-          paddingTop: Constants.statusBarHeight
+          paddingTop: Constants.statusBarHeight,
         }}
       >
         <Block flex middle>
@@ -46,10 +46,10 @@ export class LoginView extends React.Component {
               <Block
                 center
                 style={{
-                  marginTop: 250,
+                  marginTop: 200,
                   shadowColor: "#202020",
                   shadowOffset: { width: 0, height: 0 },
-                  shadowRadius: 5
+                  shadowRadius: 5,
                 }}
               >
                 <Image source={require("../assets/logo.png")} />
@@ -66,17 +66,17 @@ export class LoginView extends React.Component {
                   bgColor="transparent"
                   onBlur={() => this.toggleActive("cCode")}
                   onFocus={() => this.toggleActive("cCode")}
-                  onChangeText={text => this.setState({ cCode: text })}
+                  onChangeText={(text) => this.setState({ cCode: text })}
                   style={[
                     styles.input,
-                    this.state.active.email ? styles.inputActive : null
+                    this.state.active.email ? styles.inputActive : null,
                   ]}
                 />
               </Block>
               <Block flex top style={{ marginTop: 20 }}>
                 <Button
                   shadowless
-                  color="#c23fc4"
+                  color={Theme_color}
                   style={{ height: 48 }}
                   onPress={() => this.loginRequest()}
                 >
@@ -93,9 +93,9 @@ export class LoginView extends React.Component {
   loginRequest = () => {
     axios
       .post(url, {
-        child_code: this.state.cCode
+        child_code: this.state.cCode,
       })
-      .then(req => {
+      .then((req) => {
         if (JSON.stringify(req.data.success) == "false")
           alert(JSON.stringify(req.data.errors));
         else if (JSON.stringify(req.data.success) == "true") {
@@ -103,7 +103,7 @@ export class LoginView extends React.Component {
           this.props.navigation.navigate("App");
         }
       })
-      .catch(error => alert(error));
+      .catch((error) => alert(error));
   };
 
   saveLogin = async () => {
@@ -128,9 +128,9 @@ const styles = StyleSheet.create({
     width: width * 0.9,
     borderRadius: 0,
     borderBottomWidth: 1,
-    borderBottomColor: "#727276"
+    borderBottomColor: "#727276",
   },
   inputActive: {
-    borderBottomColor: "white"
-  }
+    borderBottomColor: "white",
+  },
 });

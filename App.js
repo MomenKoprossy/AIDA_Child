@@ -11,6 +11,7 @@ import { Icon } from "native-base";
 import GetStartedView from "./Src/GetStartedView";
 import VSBeta from "./Src/VSBETA";
 import SSNav from "./Src/Navigation/SSNav";
+import { Theme_color } from "./Src/utils";
 
 const SignoutScreen = () => {};
 
@@ -22,8 +23,8 @@ const AppNav = createBottomTabNavigator(
         tabBarLabel: "Visual Schedule",
         tabBarIcon: ({ tintColor }) => (
           <Icon name="calendar" style={{ color: tintColor }} />
-        )
-      }
+        ),
+      },
     },
     SS: {
       screen: SSNav,
@@ -31,8 +32,8 @@ const AppNav = createBottomTabNavigator(
         tabBarLabel: "Social Stories",
         tabBarIcon: ({ tintColor }) => (
           <Icon name="images" style={{ color: tintColor }} />
-        )
-      }
+        ),
+      },
     },
     Logout: {
       screen: SignoutScreen,
@@ -49,20 +50,20 @@ const AppNav = createBottomTabNavigator(
           } catch (error) {
             console.log(error);
           }
-        }
-      }
-    }
+        },
+      },
+    },
   },
   {
     headerMode: "none",
     navigationOptions: {
-      headerVisible: false
+      headerVisible: false,
     },
     tabBarOptions: {
-      activeTintColor: "#c23fc4",
+      activeTintColor: Theme_color,
       inactiveTintColor: "grey",
-      showIcon: true
-    }
+      showIcon: true,
+    },
   }
 );
 
@@ -71,7 +72,7 @@ const Main = createAppContainer(
     {
       GetStarted: { screen: GetStartedView },
       App: AppNav,
-      Auth: { screen: LoginView }
+      Auth: { screen: LoginView },
     },
     { initialRouteName: "GetStarted", headerMode: "none" }
   )
@@ -79,12 +80,12 @@ const Main = createAppContainer(
 
 export default class App extends React.Component {
   state = {
-    loading: true
+    loading: true,
   };
   async componentDidMount() {
     await Font.loadAsync({
       Roboto: require("native-base/Fonts/Roboto.ttf"),
-      Roboto_medium: require("native-base/Fonts/Roboto_medium.ttf")
+      Roboto_medium: require("native-base/Fonts/Roboto_medium.ttf"),
     });
     this.setState({ loading: false });
   }

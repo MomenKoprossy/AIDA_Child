@@ -12,29 +12,30 @@ import {
   Content,
   Card,
   CardItem,
-  H3
+  H3,
 } from "native-base";
 import Constants from "expo-constants";
 import { ScrollView } from "react-native-gesture-handler";
+import { Theme_color } from "./utils";
 
 export default class SocialStoryView extends React.Component {
   state = {
     stories: [
       {
         name: "I Will Brush My Teeth",
-        uri: require("../assets/SocialStories/c1.png")
+        uri: require("../assets/SocialStories/c1.png"),
       },
       {
-        name: "I will get schwifty",
-        uri: require("../assets/SocialStories/c2.png")
-      }
-    ]
+        name: "I will slay my enemies",
+        uri: require("../assets/SocialStories/c2.png"),
+      },
+    ],
   };
 
   render() {
     return (
       <Container style={styles.container}>
-        <Header style={{ backgroundColor: "#c23fc4" }}>
+        <Header style={{ backgroundColor: Theme_color }}>
           <Left>
             <Button transparent onPress={() => this.props.navigation.goBack()}>
               <Icon name="arrow-back" />
@@ -64,7 +65,7 @@ export default class SocialStoryView extends React.Component {
                     style={{
                       height: 214,
                       width: null,
-                      flex: 1
+                      flex: 1,
                     }}
                     source={Story.uri}
                   />
@@ -80,6 +81,6 @@ export default class SocialStoryView extends React.Component {
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: Constants.statusBarHeight
-  }
+    paddingTop: Constants.statusBarHeight,
+  },
 });

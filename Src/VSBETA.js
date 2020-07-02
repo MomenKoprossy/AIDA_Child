@@ -1,6 +1,6 @@
 import * as React from "react";
 import Constants from "expo-constants";
-import { Image } from "react-native";
+import { Image, RefreshControl } from "react-native";
 import {
   Container,
   Header,
@@ -15,17 +15,79 @@ import {
   Icon,
   Thumbnail,
   Right,
-  H3
+  H3,
 } from "native-base";
 import { ScrollView } from "react-native-gesture-handler";
+import { serverURL, Theme_color } from "./utils";
+import axios from "react-native-axios";
+import moment from "moment";
+import { Audio } from "expo-av";
+
+var sound = new Audio.Sound();
+sound.loadAsync(require("../assets/alarm.mp3"));
 
 export default class VSBeta extends React.Component {
+  url = serverURL + "get_all_tasks_for_child_in_timeFrame";
+  picurl = serverURL + "get_task_image?task_id=";
+
+  componentDidMount() {
+    this.initAll();
+    setInterval(() => {
+      this.VSLOGIC();
+    }, 5000);
+  }
+
+  initAll() {
+    this.getChildVS();
+
+    setTimeout(() => this.VSLOGIC(), 1000);
+  }
+
+  VSLOGIC = () => {
+    var temp = this.state.VS;
+    var now = moment();
+    for (var i = 0; i < temp.length; i++) {
+      if (
+        now.isAfter(temp[i].end_date_time) &&
+        temp[i].state != "done" &&
+        temp[i].state != "missed"
+      ) {
+        this.updateState(i, "missed");
+      } else if (
+        now.isBefore(temp[i].start_date_time) &&
+        temp[i].state != "due"
+      )
+        this.updateState(i, "due");
+      else if (
+        now.isBetween(temp[i].start_date_time, temp[i].end_date_time) &&
+        temp[i].state != "done" &&
+        temp[i].state != "next"
+      ) {
+        this.updateState(i, "next");
+      }
+    }
+  };
+
+  getChildVS = () => {
+    axios
+      .post(this.url)
+      .then((req) => {
+        if (JSON.stringify(req.data.success) == "false") {
+          alert(JSON.stringify(req.data.errors));
+          this.setState({ refresh: false });
+        } else if (JSON.stringify(req.data.success) == "true") {
+          this.setState({ VS: req.data.result, refresh: false });
+        }
+      })
+      .catch((error) => alert(error));
+  };
+
   rewards = () => {
     var temp = [];
     temp = this.state.VS;
     var rewards = 0;
     for (var i = 0; i < temp.length; i++) {
-      if (temp[i].status == "done") rewards++;
+      if (temp[i].state == "done") rewards++;
     }
     return (
       <Text style={{ marginRight: 10, color: "gold" }}>
@@ -34,132 +96,149 @@ export default class VSBeta extends React.Component {
     );
   };
 
-  changeStatus = index => {
+  renderTime = (time) => {
+    var temp = time.split("T");
+    var temp2 = temp[1].split(":");
+    return `${temp2[0]}:${temp2[1]}`;
+  };
+
+  renderRepeat = (task) => {
+    return (
+      <Body>
+        <H3>{task.name}</H3>
+      </Body>
+    );
+  };
+
+  updateState = (index, s) => {
     var temp = [];
     temp = this.state.VS;
-    temp[index].status = "done";
-    if (temp[index + 1] != null) temp[index + 1].status = "next";
+    temp[index].state = s;
     this.setState({ VS: temp });
+    console.log("here");
+    if (s == "next") sound.playAsync();
   };
 
   renderTask = (task, index) => {
-    if (task.status == "missed") {
+    if (task.state == "missed") {
       return (
         <Card
           key={index}
           style={{
             marginTop: 10,
             marginRight: 10,
-            marginLeft: 10
+            marginLeft: 10,
           }}
         >
           <CardItem bordered style={{ backgroundColor: "red" }}>
             <Left>
               <Thumbnail
                 square
-                source={{ uri: task.pic }}
+                source={{ uri: `${this.picurl}${task.task_id}` }}
                 style={{ marginRight: 20 }}
               />
-              <H3>{task.name}</H3>
+              {this.renderRepeat(task)}
             </Left>
-            <Right>
-              <H3>{task.time}</H3>
+            <Right style={{ flexDirection: "column" }}>
+              <Text>Start: {this.renderTime(task.start_date_time)}</Text>
+              <Text>End: {this.renderTime(task.end_date_time)}</Text>
             </Right>
           </CardItem>
         </Card>
       );
-    } else if (task.status == "done") {
+    } else if (task.state == "done") {
       return (
         <Card
           key={index}
           style={{
             marginTop: 10,
             marginRight: 10,
-            marginLeft: 10
+            marginLeft: 10,
           }}
         >
           <CardItem bordered style={{ backgroundColor: "green" }}>
             <Left>
               <Thumbnail
                 square
-                source={{ uri: task.pic }}
+                source={{ uri: `${this.picurl}${task.task_id}` }}
                 style={{ marginRight: 20 }}
               />
-              <H3>{task.name}</H3>
+              {this.renderRepeat(task)}
             </Left>
             <Right>
-              <H3>{task.time}</H3>
+              <Text>Start: {this.renderTime(task.start_date_time)}</Text>
+              <Text>End: {this.renderTime(task.end_date_time)}</Text>
             </Right>
           </CardItem>
         </Card>
       );
-    } else if (task.status == "due") {
+    } else if (task.state == "due" || task.state == "TBD") {
       return (
         <Card
           key={index}
           style={{
             marginTop: 10,
             marginRight: 10,
-            marginLeft: 10
+            marginLeft: 10,
           }}
         >
           <CardItem bordered>
             <Left>
               <Thumbnail
                 square
-                source={{ uri: task.pic }}
+                source={{ uri: `${this.picurl}${task.task_id}` }}
                 style={{ marginRight: 20 }}
               />
-              <H3>{task.name}</H3>
+              {this.renderRepeat(task)}
             </Left>
             <Right>
-              <H3>{task.time}</H3>
+              <Text>Start: {this.renderTime(task.start_date_time)}</Text>
+              <Text>End: {this.renderTime(task.end_date_time)}</Text>
             </Right>
           </CardItem>
         </Card>
       );
-    } else if (task.status == "next") {
+    } else if (task.state == "next") {
       return (
         <Card
           key={index}
           style={{
             marginTop: 10,
             marginRight: 10,
-            marginLeft: 10
+            marginLeft: 10,
           }}
         >
-          <CardItem bordered style={{ backgroundColor: "#c23fc4" }}>
+          <CardItem bordered style={{ backgroundColor: "#371796" }}>
             <Left>
               <Body>
                 <H3 style={{ color: "white" }}>{task.name}</H3>
               </Body>
               <Right>
-                <H3 style={{ color: "white" }}>{task.time}</H3>
+                <Text>Start: {this.renderTime(task.start_date_time)}</Text>
+                <Text>End: {this.renderTime(task.end_date_time)}</Text>
               </Right>
             </Left>
           </CardItem>
-          <CardItem bordered style={{ backgroundColor: "#fa66da" }}>
+          <CardItem bordered style={{ backgroundColor: Theme_color }}>
             <Image
               source={{
-                uri: task.pic,
-                flex: 1,
-                height: 200,
-                width: "100%"
+                uri: `${this.picurl}${task.task_id}`,
               }}
+              style={{ flex: 1, height: 200, width: 200 }}
             />
           </CardItem>
           <CardItem
             justifyContent="center"
-            style={{ backgroundColor: "#fa66da" }}
+            style={{ backgroundColor: "#371796" }}
           >
             <Button
               style={{
-                backgroundColor: "#c23fc4",
+                backgroundColor: Theme_color,
                 width: "60%",
                 justifyContent: "center",
-                alignSelf: "center"
+                alignSelf: "center",
               }}
-              onPress={() => this.changeStatus(index)}
+              onPress={() => this.updateState(index, "done")}
             >
               <Icon name="checkmark-circle-outline" />
               <Text>Confrim</Text>
@@ -171,56 +250,14 @@ export default class VSBeta extends React.Component {
   };
 
   state = {
-    VS: [
-      {
-        name: "Ride School Bus",
-        pic:
-          "https://i.pinimg.com/originals/95/e3/65/95e365705c7a7b977b74a182f89c7ca9.png",
-        time: "7:30",
-        status: "missed"
-      },
-      {
-        name: "Ride School Bus",
-        pic:
-          "https://i.pinimg.com/originals/95/e3/65/95e365705c7a7b977b74a182f89c7ca9.png",
-        time: "8:30",
-        status: "done"
-      },
-      {
-        name: "Ride School Bus",
-        pic:
-          "https://i.pinimg.com/originals/95/e3/65/95e365705c7a7b977b74a182f89c7ca9.png",
-        time: "9:30",
-        status: "next"
-      },
-      {
-        name: "Ride School Bus",
-        pic:
-          "https://i.pinimg.com/originals/95/e3/65/95e365705c7a7b977b74a182f89c7ca9.png",
-        time: "10:30",
-        status: "due"
-      },
-      {
-        name: "Ride School Bus",
-        pic:
-          "https://i.pinimg.com/originals/95/e3/65/95e365705c7a7b977b74a182f89c7ca9.png",
-        time: "11:30",
-        status: "due"
-      },
-      {
-        name: "Ride School Bus",
-        pic:
-          "https://i.pinimg.com/originals/95/e3/65/95e365705c7a7b977b74a182f89c7ca9.png",
-        time: "12:30",
-        status: "due"
-      }
-    ]
+    VS: [],
+    refresh: true,
   };
 
   render() {
     return (
       <Container style={{ paddingTop: Constants.statusBarHeight, flex: 1 }}>
-        <Header style={{ backgroundColor: "#c23fc4" }}>
+        <Header style={{ backgroundColor: Theme_color }}>
           <Left>
             <Button transparent onPress={() => this.props.navigation.goBack()}>
               <Icon name="arrow-back" />
@@ -234,7 +271,14 @@ export default class VSBeta extends React.Component {
             <Icon name="star" style={{ color: "gold" }} />
           </Right>
         </Header>
-        <Content>
+        <Content
+          refreshControl={
+            <RefreshControl
+              refreshing={this.state.refresh}
+              onRefresh={() => this.getChildVS()}
+            />
+          }
+        >
           <ScrollView>
             {(this.state.VS || []).map((task, index) =>
               this.renderTask(task, index)
