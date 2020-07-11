@@ -28,7 +28,8 @@ sound.loadAsync(require("../assets/alarm.mp3"));
 
 export default class VSBeta extends React.Component {
   url = serverURL + "get_all_tasks_for_child_in_timeFrame";
-  picurl = serverURL + "get_task_image?task_id=";
+  picurl = serverURL + "get_task_image?reduced=1&task_id=";
+  doneurl = serverURL + "finish_task";
 
   componentDidMount() {
     this.initAll();
@@ -45,7 +46,7 @@ export default class VSBeta extends React.Component {
 
   VSLOGIC = () => {
     var temp = this.state.VS;
-    var now = moment();
+    var now = moment().add(2, "h");
     for (var i = 0; i < temp.length; i++) {
       if (
         now.isAfter(temp[i].end_date_time) &&
@@ -53,12 +54,10 @@ export default class VSBeta extends React.Component {
         temp[i].state != "missed"
       ) {
         this.updateState(i, "missed");
-      } else if (
-        now.isBefore(temp[i].start_date_time) &&
-        temp[i].state != "due"
-      )
+      }
+      if (now.isBefore(temp[i].start_date_time) && temp[i].state != "due")
         this.updateState(i, "due");
-      else if (
+      if (
         now.isBetween(temp[i].start_date_time, temp[i].end_date_time) &&
         temp[i].state != "done" &&
         temp[i].state != "next"
@@ -115,8 +114,8 @@ export default class VSBeta extends React.Component {
     temp = this.state.VS;
     temp[index].state = s;
     this.setState({ VS: temp });
-    console.log("here");
     if (s == "next") sound.playAsync();
+    if (s == "done") axios.post(this.doneurl, { task_id: temp[index].task_id });
   };
 
   renderTask = (task, index) => {
@@ -222,7 +221,7 @@ export default class VSBeta extends React.Component {
           <CardItem bordered style={{ backgroundColor: Theme_color }}>
             <Image
               source={{
-                uri: `${this.picurl}${task.task_id}`,
+                uri: `${serverURL}get_task_image?task_id=${task_id}`,
               }}
               style={{ flex: 1, height: 200, width: 200 }}
             />
