@@ -26,7 +26,7 @@ export default class SocialStoryView extends React.Component {
         uri: require("../assets/SocialStories/c1.png"),
       },
       {
-        name: "I will slay my enemies",
+        name: "I Will Say Hello",
         uri: require("../assets/SocialStories/c2.png"),
       },
     ],

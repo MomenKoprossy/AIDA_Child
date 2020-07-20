@@ -12,8 +12,10 @@ import GetStartedView from "./Src/GetStartedView";
 import VSBeta from "./Src/VSBETA";
 import SSNav from "./Src/Navigation/SSNav";
 import { Theme_color } from "./Src/utils";
+import SocialStoryView from "./Src/SocialStoryView";
 
 const SignoutScreen = () => {};
+console.disableYellowBox = true;
 
 const AppNav = createBottomTabNavigator(
   {

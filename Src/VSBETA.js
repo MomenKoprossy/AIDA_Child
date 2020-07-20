@@ -46,24 +46,38 @@ export default class VSBeta extends React.Component {
 
   VSLOGIC = () => {
     var temp = this.state.VS;
-    var now = moment().add(2, "h");
+    var meow = new Date();
     for (var i = 0; i < temp.length; i++) {
-      if (
-        now.isAfter(temp[i].end_date_time) &&
-        temp[i].state != "done" &&
-        temp[i].state != "missed"
-      ) {
+      var ree = new Date(temp[i].end_date_time);
+      var wry = new Date(temp[i].start_date_time);
+      if (meow > ree && temp[i].state != "done" && temp[i].state != "missed") {
         this.updateState(i, "missed");
       }
-      if (now.isBefore(temp[i].start_date_time) && temp[i].state != "due")
-        this.updateState(i, "due");
+      if (meow < wry && temp[i].state != "due") this.updateState(i, "due");
       if (
-        now.isBetween(temp[i].start_date_time, temp[i].end_date_time) &&
+        meow > wry &&
+        meow < ree &&
         temp[i].state != "done" &&
         temp[i].state != "next"
       ) {
         this.updateState(i, "next");
       }
+      // if (
+      //   now.isAfter(temp[i].end_date_time) &&
+      //   temp[i].state != "done" &&
+      //   temp[i].state != "missed"
+      // ) {
+      //   this.updateState(i, "missed");
+      // }
+      // if (now.isBefore(temp[i].start_date_time) && temp[i].state != "due")
+      //   this.updateState(i, "due");
+      // if (
+      //   now.isBetween(temp[i].start_date_time, temp[i].end_date_time) &&
+      //   temp[i].state != "done" &&
+      //   temp[i].state != "next"
+      // ) {
+      //   this.updateState(i, "next");
+      // }
     }
   };
 
@@ -81,6 +95,13 @@ export default class VSBeta extends React.Component {
       .catch((error) => alert(error));
   };
 
+  appendLeadingZeroes(n) {
+    if (n <= 9) {
+      return "0" + n;
+    }
+    return n;
+  }
+
   rewards = () => {
     var temp = [];
     temp = this.state.VS;
@@ -96,9 +117,10 @@ export default class VSBeta extends React.Component {
   };
 
   renderTime = (time) => {
-    var temp = time.split("T");
-    var temp2 = temp[1].split(":");
-    return `${temp2[0]}:${temp2[1]}`;
+    var temp = new Date(time);
+    return `${this.appendLeadingZeroes(
+      temp.getHours()
+    )}:${this.appendLeadingZeroes(temp.getMinutes())}`;
   };
 
   renderRepeat = (task) => {
